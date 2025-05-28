@@ -4,11 +4,8 @@ import cloudinary from "../../config/cloudinary.js";
 
 const addNewProperty = async (property, res) => {
     try {
+
         await PropertySchema.validateAsync(property);
-        const propertyExist = await Property.findOne({ name: property.name, category: property.category });
-        if (propertyExist) {
-            return res.status(400).send({ success: false, message: 'Property with that name already exist' });
-        }
 
         const newProperty = new Property(property);
         const savedProperty = await newProperty.save().then(res => res.toObject());
@@ -157,19 +154,23 @@ const uploadPropertyImage = async (id, req, res) => {
     }
 };
 
-const getProperties = async (status, res) => {
+const getProperties = async (page, size, status, res) => {
     try {
-        let propertyExist;
-        if (status === 'all') {
-            propertyExist = await Property.find({});
+        let properties;
+        const totalProperties = await Property.countDocuments({});
+        if (page !== 'undefined' && size !== 'undefined') {
+            const skip = (Number(page) - 1) * size;
+
+            if (status === 'all') {
+                properties = await Property.find({}).sort({ name: 1 }).skip(skip).limit(size);
+            } else {
+                properties = await Property.find({ status: status === 'show' ? true : false }).sort({ name: 1 }).skip(skip).limit(size);
+            }
         } else {
-            propertyExist = await Property.find({ status: status });
-        }
-        if (!propertyExist) {
-            return res.status(400).send({ success: false, message: 'Property does not exist' });
+            properties = await Property.find({}).sort({ name: 1 });
         }
 
-        return res.status(200).send({ success: true, message: 'All Properties', data: propertyExist });
+        return res.status(200).send({ success: true, message: 'All Properties', properties, totalProperties });
 
     } catch (error) {
         console.log("error", error);
@@ -177,84 +178,22 @@ const getProperties = async (status, res) => {
     }
 };
 
-const getOneProperty = async (id, res) => {
+const getPropertiesBySearch = async (searchValue, res) => {
     try {
-        const propertyExist = await Property.findById(id);
-        if (!propertyExist) {
-            return res.status(400).send({ success: false, message: 'Property does not exist' });
-        }
-
-        return res.status(200).send({ success: true, message: 'Property found', property: propertyExist });
-
+        const data = await Property.find({ title: { $regex: new RegExp(searchValue, 'i') } }).sort({ title: 1 })
+        return res.status(201).send({ sucess: true, data })
     } catch (error) {
-        console.log("error", error);
-        return res.status(error.status || 500).send({ success: false, message: error.message || 'Internal Server Error' });
+        console.log('error--->', error)
+        res.send({ success: false, error, message: error.message })
     }
-};
-
-const getPropertiesBySearch = async (obj, res) => {
-    try {
-
-        const filter = { ...obj.filter };
-        delete obj.filter;
-
-        // Prepare the query object
-        const query = { ...obj };
-
-        // If filter has a price range, add it to the query
-        if (filter && filter.price && filter.price.minPrice && filter.price.maxPrice) {
-            query.price = {
-                $gte: filter.price.minPrice,  // greater than or equal to minPrice
-                $lte: filter.price.maxPrice   // less than or equal to maxPrice
-            };
-        }
-
-        // Initialize sort object based on selected sort option
-        let sortQuery = {};
-
-        switch (filter.sort) {
-            case 'featured':
-                sortQuery = { featured: -1 };
-                break;
-            case 'date-old-to-new':
-                sortQuery = { createdAt: 1 };
-                break;
-            case 'date-new-to-old':
-                sortQuery = { createdAt: -1 };
-                break;
-            case 'alphabetically-a-to-z':
-                sortQuery = { name: 1 };
-                break;
-            case 'alphabetically-z-to-a':
-                sortQuery = { name: -1 };
-                break;
-            case 'alphabetically-low-to-high':
-                sortQuery = { price: 1 };
-                break;
-            case 'alphabetically-high-to-low':
-                sortQuery = { price: -1 };
-                break;
-            default:
-                break;
-        }
-
-        // Fetch the properties from the database
-        const properties = await Property.find(query).sort(sortQuery);
-
-        return res.status(200).send({ success: true, data: properties })
-    } catch (error) {
-        console.log("error", error);
-        res.status(404).send({ success: false, message: error.message })
-    }
-};
+}
 
 export {
     addNewProperty,
     getProperties,
-    getOneProperty,
-    uploadPropertyImage,
+    editSpecificProperty,
     deleteFromCloudinary,
     deleteExistingProperty,
-    editSpecificProperty,
+    uploadPropertyImage,
     getPropertiesBySearch,
 };

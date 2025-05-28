@@ -1,7 +1,6 @@
 import {
     addNewProperty,
     getProperties,
-    getOneProperty,
     uploadPropertyImage,
     deleteFromCloudinary,
     deleteExistingProperty,
@@ -26,13 +25,8 @@ const editProperty = (req, res) => {
 }
 
 const getAllProperties = (req, res) => {
-    const { status } = req.params;
-    getProperties(status, res)
-}
-
-const getSpecificProperty = (req, res) => {
-    const { id } = req.params;
-    getOneProperty(id, res)
+    const { page, size, status } = req.params;
+    getProperties(page, size, status, res)
 }
 
 const uploadImage = (req, res) => {
@@ -46,14 +40,13 @@ const deleteImage = (req, res) => {
 }
 
 const getSpecificPropertiesBySearch = (req, res) => {
-    const obj = req.body;
-    getPropertiesBySearch(obj, res);
+    const { searchValue } = req.params;
+    getPropertiesBySearch(searchValue, res);
 }
 
 export {
     addProperty,
     getAllProperties,
-    getSpecificProperty,
     uploadImage,
     deleteImage,
     deleteProperty,

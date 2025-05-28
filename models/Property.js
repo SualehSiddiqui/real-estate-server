@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const PropertySchema = new Schema({
-    name: {
+    title: {
         type: String,
         required: true,
         trim: true, // Ensures no leading or trailing spaces
@@ -13,35 +13,147 @@ const PropertySchema = new Schema({
         required: true,
         min: 0, // Ensures the price is not negative
     },
-    category: {
+    address: {
         type: String,
         required: true,
         trim: true,
     },
-    shades: {
-        type: Array,
-        required: false,
-        default: [],
-    },
-    description: {
+    bed: {
         type: String,
         required: true,
+        trim: true,
     },
-    specification: {
+    bath: {
         type: String,
         required: true,
+        trim: true,
     },
-    careInstruction: {
+    houseSqft: {
         type: String,
         required: true,
+        trim: true,
     },
-    shippingAndReturn: {
+    lotSqft: {
         type: String,
         required: true,
+        trim: true,
+    },
+    state: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    city: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    zipCode: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    location: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    details: {
+        type: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        yearBuilt: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        availablity: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        description: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+    },
+    features: {
+        bedrooms: {
+            type: Array,
+            required: false,
+        },
+        bathrooms: {
+            type: Array,
+            required: false,
+        },
+        appliances: {
+            type: Array,
+            required: false,
+        },
+        interiorFeatures: {
+            type: Array,
+            required: false,
+        },
+        heatingCooling: {
+            type: Array,
+            required: false,
+        },
+        exterior: {
+            type: Array,
+            required: false,
+        },
+        garage: {
+            type: Array,
+            required: false,
+        },
+        landInfo: {
+            type: Array,
+            required: false,
+        },
+        homeownersAssociation: {
+            type: Array,
+            required: false,
+        },
+        schoolInfo: {
+            type: Array,
+            required: false,
+        },
+        rentalInfo: {
+            type: Array,
+            required: false,
+        },
+        amenities: {
+            type: Array,
+            required: false,
+        },
+        otherInfo: {
+            type: Array,
+            required: false,
+        },
+        buildingAndConstruction: {
+            type: Array,
+            required: false,
+        },
+        utilities: {
+            type: Array,
+            required: false,
+        },
+        homeFeatures: {
+            type: Array,
+            required: false,
+        },
     },
     status: {
         type: Boolean,
         default: true,
+    },
+    availableFor: {
+        type: String,
+        required: true,
+        trim: true,
     },
     imgUrl: [
         {
@@ -53,21 +165,11 @@ const PropertySchema = new Schema({
             }
         }
     ],
-    discountPercentage: {
-        type: Number,
-        required: false,
-        min: 0, // Ensures the price is not negative
-    },
-    priceBeforeDiscount: {
-        type: Number,
-        required: false,
-        min: 0, // Ensures the price is not negative
-    },
 }, {
     timestamps: true,
 });
 
 // Create and export the model
-const Item = model('Item', PropertySchema);
+const Property = model('Property', PropertySchema);
 
-export default Item;
+export default Property;

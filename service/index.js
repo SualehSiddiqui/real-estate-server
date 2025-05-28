@@ -10,7 +10,6 @@ import {
 import {
     addNewProperty,
     getProperties,
-    getOneProperty,
     uploadPropertyImage,
     deleteFromCloudinary,
     deleteExistingProperty,
@@ -28,7 +27,6 @@ export {
     //Property
     addNewProperty,
     getProperties,
-    getOneProperty,
     uploadPropertyImage,
     deleteFromCloudinary,
     deleteExistingProperty,
