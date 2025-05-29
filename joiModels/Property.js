@@ -1,22 +1,8 @@
 import Joi from 'joi';
 
-const FeatureSchema = Joi.object({
-    bedrooms: Joi.array().items(Joi.any()).optional(),
-    bathrooms: Joi.array().items(Joi.any()).optional(),
-    appliances: Joi.array().items(Joi.any()).optional(),
-    interiorFeatures: Joi.array().items(Joi.any()).optional(),
-    heatingCooling: Joi.array().items(Joi.any()).optional(),
-    exterior: Joi.array().items(Joi.any()).optional(),
-    garage: Joi.array().items(Joi.any()).optional(),
-    landInfo: Joi.array().items(Joi.any()).optional(),
-    homeownersAssociation: Joi.array().items(Joi.any()).optional(),
-    schoolInfo: Joi.array().items(Joi.any()).optional(),
-    rentalInfo: Joi.array().items(Joi.any()).optional(),
-    amenities: Joi.array().items(Joi.any()).optional(),
-    otherInfo: Joi.array().items(Joi.any()).optional(),
-    buildingAndConstruction: Joi.array().items(Joi.any()).optional(),
-    utilities: Joi.array().items(Joi.any()).optional(),
-    homeFeatures: Joi.array().items(Joi.any()).optional(),
+const FeatureItemSchema = Joi.object({
+    title: Joi.string().trim().required(),
+    list: Joi.array().items(Joi.string().trim()).required(),
 });
 
 const PropertySchema = Joi.object({
@@ -37,9 +23,10 @@ const PropertySchema = Joi.object({
         availablity: Joi.string().trim().required(),
         description: Joi.string().trim().required(),
     }).required(),
-    features: FeatureSchema.optional(),
+    features: Joi.array().items(FeatureItemSchema).optional(),
     status: Joi.boolean().default(true),
     availableFor: Joi.string().trim().required(),
+    addedBy: Joi.string().required(),
     imgUrl: Joi.array().items(
         Joi.object({
             url: Joi.string().uri().optional(),

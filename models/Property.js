@@ -2,16 +2,29 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
+const FeatureSchema = new Schema({
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    list: {
+        type: [String],
+        required: true,
+        default: [],
+    },
+}, { _id: false });
+
 const PropertySchema = new Schema({
     title: {
         type: String,
         required: true,
-        trim: true, // Ensures no leading or trailing spaces
+        trim: true,
     },
     price: {
         type: Number,
         required: true,
-        min: 0, // Ensures the price is not negative
+        min: 0,
     },
     address: {
         type: String,
@@ -81,70 +94,8 @@ const PropertySchema = new Schema({
         },
     },
     features: {
-        bedrooms: {
-            type: Array,
-            required: false,
-        },
-        bathrooms: {
-            type: Array,
-            required: false,
-        },
-        appliances: {
-            type: Array,
-            required: false,
-        },
-        interiorFeatures: {
-            type: Array,
-            required: false,
-        },
-        heatingCooling: {
-            type: Array,
-            required: false,
-        },
-        exterior: {
-            type: Array,
-            required: false,
-        },
-        garage: {
-            type: Array,
-            required: false,
-        },
-        landInfo: {
-            type: Array,
-            required: false,
-        },
-        homeownersAssociation: {
-            type: Array,
-            required: false,
-        },
-        schoolInfo: {
-            type: Array,
-            required: false,
-        },
-        rentalInfo: {
-            type: Array,
-            required: false,
-        },
-        amenities: {
-            type: Array,
-            required: false,
-        },
-        otherInfo: {
-            type: Array,
-            required: false,
-        },
-        buildingAndConstruction: {
-            type: Array,
-            required: false,
-        },
-        utilities: {
-            type: Array,
-            required: false,
-        },
-        homeFeatures: {
-            type: Array,
-            required: false,
-        },
+        type: [FeatureSchema],  // Array of feature objects as per your JSON structure
+        default: [],
     },
     status: {
         type: Boolean,
@@ -154,6 +105,11 @@ const PropertySchema = new Schema({
         type: String,
         required: true,
         trim: true,
+    },
+    addedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
     imgUrl: [
         {
@@ -169,7 +125,6 @@ const PropertySchema = new Schema({
     timestamps: true,
 });
 
-// Create and export the model
 const Property = model('Property', PropertySchema);
 
 export default Property;

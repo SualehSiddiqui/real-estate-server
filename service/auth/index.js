@@ -204,6 +204,21 @@ const resetPassword = async (id, token, password, res) => {
     }
 }
 
+const getOneUser = async (id, res) => {
+    try {
+        const userExist = await User.findById(id);
+
+        if (!userExist) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).send({ success: true, message: 'User Found', user: userExist });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
+    }
+}
+
 const updateUser = async (id, password, userObj, res) => {
     try {
         let updatedUser;
@@ -212,13 +227,7 @@ const updateUser = async (id, password, userObj, res) => {
             let user;
 
             if (!userExist) {
-                const adminExist = await Admin.findById(id);
-                if (!adminExist) {
-                    return res.status(404).send({ success: false, message: 'User not found' });
-                }
-                user = { obj: adminExist, isAdmin: true };
-            } else {
-                user = { obj: userExist, isAdmin: false };
+                return res.status(404).send({ success: false, message: 'User not found' });
             }
 
             // Validate old password
@@ -242,12 +251,8 @@ const updateUser = async (id, password, userObj, res) => {
             // Remove oldPassword as it's no longer needed
             delete userObj.oldPassword;
 
-            // Update user or admin
-            if (user.isAdmin) {
-                updatedUser = await Admin.findByIdAndUpdate(id, userObj, { new: true }).lean();
-            } else {
-                updatedUser = await User.findByIdAndUpdate(id, userObj, { new: true }).lean();
-            }
+            updatedUser = await User.findByIdAndUpdate(id, userObj, { new: true }).lean();
+
 
             // Ensure no sensitive information is sent back
             if (updatedUser) {
@@ -290,4 +295,5 @@ export {
     resetPasswordUi,
     resetPassword,
     updateUser,
+    getOneUser,
 }

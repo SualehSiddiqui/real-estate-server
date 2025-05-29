@@ -4,7 +4,7 @@ import cloudinary from "../../config/cloudinary.js";
 
 const addNewProperty = async (property, res) => {
     try {
-
+        console.log('property', property.features)
         await PropertySchema.validateAsync(property);
 
         const newProperty = new Property(property);
@@ -154,39 +154,68 @@ const uploadPropertyImage = async (id, req, res) => {
     }
 };
 
-const getProperties = async (page, size, status, res) => {
+const getProperties = async (filters, res) => {
     try {
-        let properties;
-        const totalProperties = await Property.countDocuments({});
-        if (page !== 'undefined' && size !== 'undefined') {
-            const skip = (Number(page) - 1) * size;
+        const {
+            page,
+            size,
+            userId,
+            title,
+            availableFor,
+            _id,
+        } = filters;
 
-            if (status === 'all') {
-                properties = await Property.find({}).sort({ name: 1 }).skip(skip).limit(size);
-            } else {
-                properties = await Property.find({ status: status === 'show' ? true : false }).sort({ name: 1 }).skip(skip).limit(size);
-            }
-        } else {
-            properties = await Property.find({}).sort({ name: 1 });
+        // Build filter object
+        const filter = {};
+
+        // Filter by _id if provided and valid
+        if (_id && _id !== '' && _id !== 'undefined') {
+            filter._id = _id;
         }
 
-        return res.status(200).send({ success: true, message: 'All Properties', properties, totalProperties });
+        // Filter by userId if provided and valid
+        if (userId && userId !== 'all' && userId !== 'undefined') {
+            filter.addedBy = userId;
+        }
+
+        // Filter by title (search) if provided
+        if (title && title !== 'undefined') {
+            filter.title = { $regex: new RegExp(title, 'i') };
+        }
+
+        // Filter by availableFor (search) if provided
+        if (availableFor && availableFor !== 'undefined') {
+            filter.availableFor = availableFor;
+        }
+
+        // Count documents based on filter
+        const totalProperties = await Property.countDocuments(filter);
+
+        let properties;
+
+        if (page !== undefined && size !== undefined && page !== 'undefined' && size !== 'undefined') {
+            const skip = (Number(page) - 1) * Number(size);
+            properties = await Property.find(filter).sort({ title: 1 }).skip(skip).limit(Number(size));
+        } else {
+            properties = await Property.find(filter).sort({ title: 1 });
+        }
+
+        return res.status(200).send({
+            success: true,
+            message: 'Filtered Properties',
+            properties,
+            totalProperties,
+        });
 
     } catch (error) {
         console.log("error", error);
-        return res.status(error.status || 500).send({ success: false, message: error.message || 'Internal Server Error' });
+        return res.status(error.status || 500).send({
+            success: false,
+            message: error.message || 'Internal Server Error'
+        });
     }
 };
 
-const getPropertiesBySearch = async (searchValue, res) => {
-    try {
-        const data = await Property.find({ title: { $regex: new RegExp(searchValue, 'i') } }).sort({ title: 1 })
-        return res.status(201).send({ sucess: true, data })
-    } catch (error) {
-        console.log('error--->', error)
-        res.send({ success: false, error, message: error.message })
-    }
-}
 
 export {
     addNewProperty,
@@ -195,5 +224,4 @@ export {
     deleteFromCloudinary,
     deleteExistingProperty,
     uploadPropertyImage,
-    getPropertiesBySearch,
 };

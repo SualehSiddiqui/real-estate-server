@@ -5,6 +5,7 @@ import {
     resetPasswordUi,
     resetPassword,
     updateUser,
+    getOneUser,
 } from "./auth/index.js";
 
 import {
@@ -14,7 +15,6 @@ import {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
-    getPropertiesBySearch
 } from "./property/index.js";
 
 export {
@@ -24,6 +24,7 @@ export {
     resetPasswordUi,
     resetPassword,
     updateUser,
+    getOneUser,
     //Property
     addNewProperty,
     getProperties,
@@ -31,5 +32,4 @@ export {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
-    getPropertiesBySearch,
 }

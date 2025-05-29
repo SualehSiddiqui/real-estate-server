@@ -5,7 +5,6 @@ import {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
-    getPropertiesBySearch
 } from '../../service/index.js';
 
 const addProperty = (req, res) => {
@@ -25,8 +24,8 @@ const editProperty = (req, res) => {
 }
 
 const getAllProperties = (req, res) => {
-    const { page, size, status } = req.params;
-    getProperties(page, size, status, res)
+    const filters = req.body;
+    getProperties(filters, res)
 }
 
 const uploadImage = (req, res) => {
@@ -39,11 +38,6 @@ const deleteImage = (req, res) => {
     deleteFromCloudinary(public_id, id, res);
 }
 
-const getSpecificPropertiesBySearch = (req, res) => {
-    const { searchValue } = req.params;
-    getPropertiesBySearch(searchValue, res);
-}
-
 export {
     addProperty,
     getAllProperties,
@@ -51,5 +45,4 @@ export {
     deleteImage,
     deleteProperty,
     editProperty,
-    getSpecificPropertiesBySearch
 };
