@@ -6,6 +6,10 @@ import {
     resetPassword,
     updateUser,
     getOneUser,
+    getUsersMessage,
+    messageAboutProperty,
+    markAsRead,
+    deleteMessage,
 } from "./auth/index.js";
 
 import {
@@ -25,6 +29,10 @@ export {
     resetPassword,
     updateUser,
     getOneUser,
+    getUsersMessage,
+    messageAboutProperty,
+    markAsRead,
+    deleteMessage,
     //Property
     addNewProperty,
     getProperties,

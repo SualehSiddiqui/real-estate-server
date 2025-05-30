@@ -53,6 +53,7 @@ const validateUser = async (user, res) => {
         }
         //deleting password  which is in hash
         delete userExist.password
+        delete userExist.messages
 
         const token = jwt.sign(
             { _id: userExist._id },
@@ -223,20 +224,18 @@ const updateUser = async (id, password, userObj, res) => {
     try {
         let updatedUser;
         const userExist = await User.findById(id);
-        if (password === 'true') {
-            let user;
+        if (!userExist) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
 
-            if (!userExist) {
-                return res.status(404).send({ success: false, message: 'User not found' });
-            }
+        // Validate old password
+        const isMatch = await bcrypt.compare(userObj.oldPassword, userExist.password);
+        if (!isMatch) {
+            return res.status(400).send({ success: false, message: 'Incorrect old password' });
+        }
 
-            // Validate old password
-            const isMatch = await bcrypt.compare(userObj.oldPassword, user.obj.password);
-            if (!isMatch) {
-                return res.status(400).send({ success: false, message: 'Incorrect old password' });
-            }
-
-            const oldPasswordMatch = await bcrypt.compare(userObj.newPassword, user.obj.password);
+        if (userObj.newPassword && userObj.newPassword.length > 0) {
+            const oldPasswordMatch = await bcrypt.compare(userObj.newPassword, userExist.password);
             if (oldPasswordMatch) {
                 return res.status(400).send({ success: false, message: 'New password cannot be same same as old password' });
             }
@@ -248,41 +247,192 @@ const updateUser = async (id, password, userObj, res) => {
                 delete userObj.newPassword;
             }
 
-            // Remove oldPassword as it's no longer needed
-            delete userObj.oldPassword;
-
-            updatedUser = await User.findByIdAndUpdate(id, userObj, { new: true }).lean();
-
-
-            // Ensure no sensitive information is sent back
-            if (updatedUser) {
-                delete updatedUser.password;
-            }
-
-        } else {
-            delete userObj.password
-
-            if (!userExist) {
-                return res.status(404).send({ success: false, message: 'User not found' });
-            }
-
-            updatedUser = await User.findByIdAndUpdate(
-                id,
-                userObj,
-                {
-                    new: true
-                }
-            )
-
-            // Ensure no sensitive information is sent back
-            if (updatedUser) {
-                delete updatedUser.password;
-            }
         }
 
-        res.status(200).send({ success: true, message: 'User updated successfully', data: updatedUser });
+        // Remove oldPassword as it's no longer needed
+        delete userObj.oldPassword;
+
+        console.log('userObj', userObj)
+
+        updatedUser = await User.findByIdAndUpdate(id, userObj, { new: true }).lean();
+
+        
+        console.log('updatedUser', updatedUser)
+        
+        
+        // Ensure no sensitive information is sent back
+        if (updatedUser) {
+            delete updatedUser.messages;
+            delete updatedUser.password;
+        }
+
+        res.status(200).send({ success: true, message: 'User updated successfully', user: updatedUser });
     } catch (error) {
         console.error("Error updating user:", error);
+        res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
+    }
+};
+
+const getUsersMessage = async (userId, page, size, res) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
+
+        // Ensure page and size are numbers and positive
+        page = Number(page);
+        size = Number(size);
+
+        if (isNaN(page) || page < 1) page = 1;
+        if (isNaN(size) || size < 1) size = 10;
+
+        // Sort messages by createdAt descending (latest first)
+        const sortedMessages = user.messages.sort((a, b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        const totalMessages = sortedMessages.length;
+        const startIndex = (page - 1) * size;
+        const endIndex = startIndex + size;
+
+        // Paginate messages array
+        const paginatedMessages = sortedMessages.slice(startIndex, endIndex);
+
+        res.status(200).send({
+            success: true,
+            message: 'Messages fetched successfully',
+            totalMessages: totalMessages,
+            messages: paginatedMessages
+        });
+    } catch (error) {
+        console.error("Error fetching user messages:", error);
+        res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
+    }
+};
+
+const messageAboutProperty = async (userId, messageObj, res) => {
+    try {
+        // Find user by id (the recipient)
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
+
+        // Add createdAt timestamp to message object
+        const newMessage = {
+            ...messageObj,
+            createdAt: new Date()
+        };
+
+        // Push new message into user's messages array
+        user.messages.push(newMessage);
+
+        // Save user with updated messages
+        await user.save();
+
+        // Setup nodemailer transporter
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.USER,
+                pass: process.env.APP_PASSWORD,
+            },
+        });
+
+        // Prepare email content
+        const mailOptions = {
+            from: {
+                name: 'YourSiteName',
+                address: process.env.USER
+            },
+            to: user.email, // recipient email
+            subject: `New Message About Your Property`,
+            text: `You have received a new message from ${newMessage.name} regarding your property "${newMessage.property?.name || 'N/A'}".\n
+                Message: ${newMessage.message || 'No message text'}\n
+                Sent At: ${newMessage.createdAt.toLocaleString()}\n
+                Please log in to your account to view and respond.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h2>New Message Received</h2>
+                    <p>You have received a new message from <strong>${newMessage.name}</strong> regarding your property <strong>${newMessage.property?.name || 'N/A'}</strong>.</p>
+                    <p><strong>Message:</strong><br/>${newMessage.message || 'No message text'}</p>
+                    <p><strong>Sent At:</strong> ${newMessage.createdAt.toLocaleString()}</p>
+                    <p>Please <a href="http://localhost:5173/loginAgent">log in</a> to your account to view and respond.</p>
+                </div>
+            `
+        };
+
+        // Send email asynchronously
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Error sending notification email:", err);
+            } else {
+                console.log('Notification email sent:', info.response);
+            }
+        });
+
+        // Remove sensitive info before sending response
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.status(200).send({ success: true, message: 'Message Sent', messages: userObj.messages });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
+    }
+};
+
+const markAsRead = async (userId, messageId, res) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
+
+        // Find the message in user's messages array by messageId
+        const message = user.messages.id(messageId);
+        if (!message) {
+            return res.status(404).send({ success: false, message: 'Message not found' });
+        }
+
+        // Mark message as read
+        message.read = true;
+
+        // Save user with updated message read status
+        await user.save();
+
+        // Convert to Object and delete sensitive info before returning
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.status(200).send({ success: true, message: 'Message marked as read', messages: userObj.messages });
+    } catch (error) {
+        console.error("Error marking message as read:", error);
+        res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
+    }
+};
+
+const deleteMessage = async (userId, messageId, res) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send({ success: false, message: 'User not found' });
+        }
+
+        user.messages = user.messages.filter(msg => msg._id.toString() !== messageId);
+        await user.save();
+
+
+        const userObj = user.toObject();
+        delete userObj.password;
+
+        res.status(200).send({ success: true, message: 'Message deleted successfully', messages: userObj.messages });
+    } catch (error) {
+        console.error("Error deleting message:", error);
         res.status(500).send({ success: false, message: error.message || 'Internal Server Error' });
     }
 };
@@ -295,5 +445,9 @@ export {
     resetPasswordUi,
     resetPassword,
     updateUser,
+    getUsersMessage,
     getOneUser,
+    messageAboutProperty,
+    markAsRead,
+    deleteMessage,
 }

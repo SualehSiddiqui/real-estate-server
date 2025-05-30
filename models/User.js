@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { SchemaTypeOptions, Types } from "mongoose";
 
 const { Schema, model } = mongoose;
 
@@ -31,6 +31,42 @@ const UserSchema = new Schema({
         required: false,
         trim: true,
     },
+    messages: [
+        {
+            message: {
+                type: String,
+                required: false,
+            },
+            name: {
+                type: String,
+                required: false,
+            },
+            phone: {
+                type: String,
+                required: false,
+            },
+            email: {
+                type: String,
+                required: false,
+            },
+            desiredDate: {
+                type: String,
+                required: false,
+            },
+            createdAt: {
+                type: Date,
+                required: false,
+            },
+            property: {
+                type: Object,
+                required: false
+            },
+            read: {
+                type: Boolean,
+                default: false,
+            }
+        }
+    ]
 }, {
     timestamps: true
 })

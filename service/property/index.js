@@ -163,6 +163,8 @@ const getProperties = async (filters, res) => {
             title,
             availableFor,
             _id,
+            city,
+            state
         } = filters;
 
         // Build filter object
@@ -186,6 +188,16 @@ const getProperties = async (filters, res) => {
         // Filter by availableFor (search) if provided
         if (availableFor && availableFor !== 'undefined') {
             filter.availableFor = availableFor;
+        }
+
+        // Filter by city (search) if provided
+        if (city && city !== 'undefined') {
+            filter.city = city;
+        }
+
+        // Filter by state (search) if provided
+        if (state && state !== 'undefined') {
+            filter.state = state;
         }
 
         // Count documents based on filter

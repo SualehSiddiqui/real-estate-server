@@ -4,8 +4,12 @@ import {
     forgetPassword,
     resetPasswordUi,
     resetPassword,
-    // updateUser,
+    updateUser,
     getOneUser,
+    getUsersMessage,
+    messageAboutProperty,
+    markAsRead,
+    deleteMessage,
 } from "../../service/index.js";
 
 const signin = (req, res) => {
@@ -34,15 +38,36 @@ const resetUserPassword = async (req, res) => {
     return resetPassword(id, token, password, res)
 }
 
-// const updateUserInfo = async (req, res) => {
-//     const { id, password } = req.params;
-//     const userObj = req.body;
-//     return updateUser(id, password, userObj, res)
-// }
+const updateUserInfo = async (req, res) => {
+    const { id, password } = req.params;
+    const userObj = req.body;
+    return updateUser(id, password, userObj, res)
+}
 
 const getSingleUser = async (req, res) => {
     const { id } = req.params;
     return getOneUser(id, res)
+}
+
+const getMessage = async (req, res) => {
+    const { userId, page, size } = req.params;
+    return getUsersMessage(userId, page, size, res)
+}
+
+const postMessage = async (req, res) => {
+    const { userId } = req.params;
+    const messageObj = req.body;
+    return messageAboutProperty(userId, messageObj, res)
+}
+
+const markAsReadThisMessage = async (req, res) => {
+    const { userId, messageId } = req.params;
+    return markAsRead(userId, messageId, res)
+}
+
+const deleteThisMessage = async (req, res) => {
+    const { userId, messageId } = req.params;
+    return deleteMessage(userId, messageId, res)
 }
 
 export {
@@ -51,6 +76,10 @@ export {
     forgetUserPassword,
     resetUserPasswordUi,
     resetUserPassword,
-    // updateUserInfo,
+    updateUserInfo,
     getSingleUser,
+    getMessage,
+    postMessage,
+    markAsReadThisMessage,
+    deleteThisMessage,
 };
