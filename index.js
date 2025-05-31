@@ -9,9 +9,8 @@ const PORT = process.env.PORT || 8000;
 
 // Allowed origins
 const allowedOrigins = [
-    'http://localhost:5173', // Local development
-    'http://localhost:5174', // Local development
-    'http://localhost:8000', // Local development
+    'https://real-estate-website-seven-pied.vercel.app', // Local development
+    'https://real-estate-server-lemon.vercel.app', // Local development
     // Add other origins as needed
 ];
 
