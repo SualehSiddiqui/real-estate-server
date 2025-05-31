@@ -26,6 +26,8 @@ const createUser = async (user, res) => {
         const savedUser = await newUser.save().then(res => res.toObject())
         //deleting password which is in hash
         delete savedUser.password
+        //deleting messages
+        delete savedUser.messages
         // Creating Jwt token
         const token = jwt.sign(
             { _id: savedUser._id },
@@ -33,7 +35,7 @@ const createUser = async (user, res) => {
             { expiresIn }
         )
 
-        return res.status(200).send({ succes: true, message: "User Created", data: savedUser, token });
+        return res.status(200).send({ succes: true, message: "User Created", user: savedUser, token });
     } catch (error) {
         console.log("error", error)
         return res.status(error.status || 400).send({ success: false, message: error?.message });
@@ -256,10 +258,10 @@ const updateUser = async (id, password, userObj, res) => {
 
         updatedUser = await User.findByIdAndUpdate(id, userObj, { new: true }).lean();
 
-        
+
         console.log('updatedUser', updatedUser)
-        
-        
+
+
         // Ensure no sensitive information is sent back
         if (updatedUser) {
             delete updatedUser.messages;

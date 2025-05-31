@@ -63,7 +63,7 @@ const PropertySchema = new Schema({
     },
     zipCode: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
     },
     location: {

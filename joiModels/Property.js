@@ -15,7 +15,7 @@ const PropertySchema = Joi.object({
     lotSqft: Joi.string().trim().required(),
     state: Joi.string().trim().required(),
     city: Joi.string().trim().required(),
-    zipCode: Joi.string().trim().required(),
+    zipCode: Joi.string().trim(),
     location: Joi.string().trim().required(),
     details: Joi.object({
         type: Joi.string().trim().required(),
