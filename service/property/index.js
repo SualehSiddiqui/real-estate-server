@@ -1,6 +1,8 @@
 import PropertySchema from "../../joiModels/Property.js";
 import Property from "../../models/Property.js";
 import cloudinary from "../../config/cloudinary.js";
+import usStates from "states-us";
+import allCities from 'all-the-cities';
 
 const addNewProperty = async (property, res) => {
     try {
@@ -192,12 +194,12 @@ const getProperties = async (filters, res) => {
 
         // Filter by city (search) if provided
         if (city && city !== 'undefined') {
-            filter.city = city;
+            filter.city = city.toLowerCase();
         }
 
         // Filter by state (search) if provided
         if (state && state !== 'undefined') {
-            filter.state = state;
+            filter.state = state.toLowerCase();
         }
 
         // Count documents based on filter
@@ -228,6 +230,50 @@ const getProperties = async (filters, res) => {
     }
 };
 
+const getCityOrState = async (type, q, res) => {
+    try {
+        console.log({ type, q })
+        const query = (q || "").toLowerCase().trim();
+        let data = [];
+
+        if (!type || (type !== 'city' && type !== 'state')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or missing type. Must be "city" or "state".',
+                data: [],
+            });
+        }
+
+        if (type === 'state') {
+            data = Array.from(new Set(
+                usStates.states
+                    .filter(x => x.name.toLowerCase().startsWith(query))
+                    .map(x => x.name)
+            ));
+        }
+
+        if (type === 'city') {
+            data = Array.from(new Set(
+                allCities
+                    .filter(city => city.country === 'US' && city.name.toLowerCase().startsWith(query))
+                    .map(city => city.name)
+            ));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Fetched data successfully',
+            data,
+        });
+    } catch (error) {
+        console.error("Error getting city/state data:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Internal Server Error',
+            data: [],
+        });
+    }
+};
 
 export {
     addNewProperty,
@@ -236,4 +282,5 @@ export {
     deleteFromCloudinary,
     deleteExistingProperty,
     uploadPropertyImage,
+    getCityOrState,
 };

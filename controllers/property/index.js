@@ -5,6 +5,7 @@ import {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
+    getCityOrState,
 } from '../../service/index.js';
 
 const addProperty = (req, res) => {
@@ -38,6 +39,11 @@ const deleteImage = (req, res) => {
     deleteFromCloudinary(public_id, id, res);
 }
 
+const getAllCityOrState = (req, res) => {
+    const { type, q = '' } = req.query;
+    getCityOrState(type, q, res);
+}
+
 export {
     addProperty,
     getAllProperties,
@@ -45,4 +51,5 @@ export {
     deleteImage,
     deleteProperty,
     editProperty,
+    getAllCityOrState,
 };

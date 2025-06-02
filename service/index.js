@@ -19,6 +19,7 @@ import {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
+    getCityOrState,
 } from "./property/index.js";
 
 export {
@@ -40,4 +41,5 @@ export {
     deleteFromCloudinary,
     deleteExistingProperty,
     editSpecificProperty,
+    getCityOrState,
 }
