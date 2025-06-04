@@ -232,7 +232,6 @@ const getProperties = async (filters, res) => {
 
 const getCityOrState = async (type, q, res) => {
     try {
-        console.log({ type, q })
         const query = (q || "").toLowerCase().trim();
         let data = [];
 
